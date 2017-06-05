@@ -245,4 +245,28 @@ describe('promiseAgain', () => {
 
         clock.tick(50);
     });
+
+    it('should call onCatch with catch reason, attempts count and original arguments', (done) => {
+        const func = sinon.stub();
+
+        func.onCall(0).rejects('Some reason 1');
+        func.onCall(1).rejects('Some reason 2');
+        func.onCall(2).resolves('Needed value');
+
+        const onCatch = sinon.spy();
+
+        const composedFunction = promiseAgain(func, {attempts: 5, onCatch});
+        composedFunction(1, 2, 3, 'some arg').then(() => {
+            expect(onCatch.callCount).to.equal(2);
+
+            expect(
+                onCatch.calledWithExactly(sinon.match({name: 'Some reason 1'}), 1, 1, 2, 3, 'some arg'),
+            ).to.equal(true);
+
+            expect(
+                onCatch.calledWithExactly(sinon.match({name: 'Some reason 2'}), 2, 1, 2, 3, 'some arg'),
+            ).to.equal(true);
+            done();
+        });
+    });
 });

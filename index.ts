@@ -4,6 +4,7 @@ export interface IOptions {
     delay?: number | ((attempt: number, ...args: any[]) => number);
     attempts: number | ((attempt: number, ...args: any[]) => boolean);
     retryArgumentsInterceptor?: (attempt: number, ...args: any[]) => any[];
+    onCatch?: (reason: any, attempt: number, ...args: any[]) => void;
 }
 
 export default function promiseAgain<T>(
@@ -16,6 +17,10 @@ export default function promiseAgain<T>(
         return function attempt(...innerArgs: any[]): Promise<T> {
             return func(...innerArgs).catch((reason): Promise<T> => {
                 usedAttempts += 1;
+
+                if (options.onCatch) {
+                    options.onCatch(reason, usedAttempts, ...innerArgs);
+                }
 
                 const newArguments = options.retryArgumentsInterceptor ?
                     (options.retryArgumentsInterceptor(usedAttempts, ...innerArgs) || []) : innerArgs;
