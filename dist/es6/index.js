@@ -13,11 +13,8 @@ export default function promiseAgain(func, options) {
             }
             return func.apply(void 0, innerArgs).catch(function (reason) {
                 usedAttempts += 1;
-                if (options.onCatch) {
-                    options.onCatch.apply(options, [reason, usedAttempts].concat(innerArgs));
-                }
                 var newArguments = options.retryArgumentsInterceptor ?
-                    (options.retryArgumentsInterceptor.apply(options, [usedAttempts].concat(innerArgs)) || []) : innerArgs;
+                    (options.retryArgumentsInterceptor.apply(options, [reason, usedAttempts].concat(innerArgs)) || []) : innerArgs;
                 var shouldRetry = false;
                 if (typeof options.attempts === 'number') {
                     shouldRetry = usedAttempts < options.attempts;

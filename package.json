@@ -1,6 +1,6 @@
 {
   "name": "promise-again",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "./dist/umd/index.js",
   "module": "./dist/es6/index.js",
   "license": "MIT",
