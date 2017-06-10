@@ -1,8 +1,8 @@
 import * as promiseDelay from 'delay';
 
 export interface IOptions {
-    delay?: number | ((attempt: number, ...args: any[]) => number | Promise<number>);
-    attempts: number | ((attempt: number, ...args: any[]) => boolean | Promise<boolean>);
+    delay?: number | ((reason: any, attempt: number, ...args: any[]) => number | Promise<number>);
+    attempts: number | ((reason: any, attempt: number, ...args: any[]) => boolean | Promise<boolean>);
     retryArgumentsInterceptor?: (reason: any, attempt: number, ...args: any[]) => any[] | Promise<any[]>;
 }
 
@@ -25,7 +25,7 @@ export default function promiseAgain<T>(
                 if (typeof options.attempts === 'number') {
                     shouldRetry = usedAttempts < options.attempts;
                 } else {
-                    shouldRetry = options.attempts(usedAttempts, ...innerArgs);
+                    shouldRetry = options.attempts(reason, usedAttempts, ...innerArgs);
                 }
 
                 let nextDelay: number | Promise<number> = 0;
@@ -33,7 +33,7 @@ export default function promiseAgain<T>(
                 if (typeof options.delay === 'number') {
                     nextDelay = options.delay;
                 } else if (typeof options.delay === 'function') {
-                    nextDelay = options.delay(usedAttempts, ...innerArgs);
+                    nextDelay = options.delay(reason, usedAttempts, ...innerArgs);
                 }
 
                 return Promise.all([shouldRetry, nextDelay, newArguments]).then(

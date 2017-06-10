@@ -113,6 +113,39 @@ describe('promiseAgain', () => {
         freePromisesQueue(clock)();
     });
 
+    it('should call attempts dunction with reason, sequentially changing args and attempts count', (done) => {
+        const func = sinon.stub();
+
+        func.onCall(0).rejects('Some reason 1');
+        func.onCall(1).rejects('Some reason 2');
+        func.onCall(2).resolves('Needed value');
+
+        const attempts = sinon.stub();
+        attempts.onCall(0).returns(true);
+        attempts.onCall(1).returns(true);
+
+        const composedFunction = promiseAgain(func, {attempts});
+        composedFunction(1, 2, 3, 'some arg').then(() => {
+            expect(attempts.callCount).to.equal(2);
+
+            expect(
+                attempts.calledWithExactly(
+                    sinon.match({name: 'Some reason 1'}), 1, 1, 2, 3, 'some arg',
+                ),
+            ).to.equal(true);
+
+            expect(
+                attempts.calledWithExactly(
+                    sinon.match({name: 'Some reason 2'}), 2, 1, 2, 3, 'some arg',
+                ),
+            ).to.equal(true);
+
+            done();
+        });
+
+        freePromisesQueue(clock)();
+    });
+
     it('should pass all function arguments to wrapped function', (done) => {
         const func = sinon.stub();
 
@@ -175,7 +208,7 @@ describe('promiseAgain', () => {
         freePromisesQueue(clock)();
     });
 
-    it('should call retryArgumentsInterceptor with sequentially changing args and attempts count', (done) => {
+    it('should call retryArgumentsInterceptor with reason, sequentially changing args and attempts count', (done) => {
         const func = sinon.stub();
 
         func.onCall(0).rejects('Some reason 1');
@@ -337,7 +370,7 @@ describe('promiseAgain', () => {
         clock.tick(50);
     });
 
-    it('should pass attempts count and sequential changing arguments to delay function', (done) => {
+    it('should pass reason, attempts count and sequential changing arguments to delay function', (done) => {
         const func = sinon.stub();
 
         func.onCall(0).rejects('Some reason 1');
@@ -358,8 +391,13 @@ describe('promiseAgain', () => {
         });
         composedFunction(1, 2, 3, 'some arg').then(() => {
             expect(delayFunction.callCount).to.equal(2);
-            expect(delayFunction.calledWithExactly(1, 1, 2, 3, 'some arg')).to.equal(true);
-            expect(delayFunction.calledWithExactly(2, 5, 6, 7)).to.equal(true);
+            expect(
+                delayFunction.calledWithExactly(sinon.match({name: 'Some reason 1'}), 1, 1, 2, 3, 'some arg'),
+            ).to.equal(true);
+
+            expect(
+                delayFunction.calledWithExactly(sinon.match({name: 'Some reason 2'}), 2, 5, 6, 7),
+            ).to.equal(true);
 
             done();
         }).catch(() => {

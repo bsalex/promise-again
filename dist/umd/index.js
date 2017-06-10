@@ -31,23 +31,26 @@
                         shouldRetry = usedAttempts < options.attempts;
                     }
                     else {
-                        shouldRetry = options.attempts.apply(options, [usedAttempts].concat(innerArgs));
+                        shouldRetry = options.attempts.apply(options, [reason, usedAttempts].concat(innerArgs));
                     }
                     var nextDelay = 0;
                     if (typeof options.delay === 'number') {
                         nextDelay = options.delay;
                     }
                     else if (typeof options.delay === 'function') {
-                        nextDelay = options.delay.apply(options, [usedAttempts].concat(innerArgs));
+                        nextDelay = options.delay.apply(options, [reason, usedAttempts].concat(innerArgs));
                     }
-                    if (shouldRetry) {
-                        return promiseDelay(nextDelay)
-                            .then(function () { return attempt.apply(void 0, newArguments); })
-                            .catch(function (subReason) { return Promise.reject(subReason); });
-                    }
-                    else {
-                        return Promise.reject(reason);
-                    }
+                    return Promise.all([shouldRetry, nextDelay, newArguments]).then(function (_a) {
+                        var resolvedShouldRetry = _a[0], resolvedNextDelay = _a[1], _b = _a[2], resolvedNewArguments = _b === void 0 ? [] : _b;
+                        if (resolvedShouldRetry) {
+                            return promiseDelay(resolvedNextDelay)
+                                .then(function () { return attempt.apply(void 0, resolvedNewArguments); })
+                                .catch(function (subReason) { return Promise.reject(subReason); });
+                        }
+                        else {
+                            return Promise.reject(reason);
+                        }
+                    });
                 });
             }.apply(void 0, args);
         };
