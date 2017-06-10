@@ -1,9 +1,9 @@
 import * as promiseDelay from 'delay';
 
 export interface IOptions {
-    delay?: number | ((attempt: number, ...args: any[]) => number);
-    attempts: number | ((attempt: number, ...args: any[]) => boolean);
-    retryArgumentsInterceptor?: (reason: any, attempt: number, ...args: any[]) => any[];
+    delay?: number | ((attempt: number, ...args: any[]) => number | Promise<number>);
+    attempts: number | ((attempt: number, ...args: any[]) => boolean | Promise<boolean>);
+    retryArgumentsInterceptor?: (reason: any, attempt: number, ...args: any[]) => any[] | Promise<any[]>;
 }
 
 export default function promiseAgain<T>(
@@ -20,7 +20,7 @@ export default function promiseAgain<T>(
                 const newArguments = options.retryArgumentsInterceptor ?
                     (options.retryArgumentsInterceptor(reason, usedAttempts, ...innerArgs) || []) : innerArgs;
 
-                let shouldRetry = false;
+                let shouldRetry: boolean | Promise<boolean> = false;
 
                 if (typeof options.attempts === 'number') {
                     shouldRetry = usedAttempts < options.attempts;
@@ -28,7 +28,7 @@ export default function promiseAgain<T>(
                     shouldRetry = options.attempts(usedAttempts, ...innerArgs);
                 }
 
-                let nextDelay: number = 0;
+                let nextDelay: number | Promise<number> = 0;
 
                 if (typeof options.delay === 'number') {
                     nextDelay = options.delay;
@@ -36,13 +36,17 @@ export default function promiseAgain<T>(
                     nextDelay = options.delay(usedAttempts, ...innerArgs);
                 }
 
-                if (shouldRetry) {
-                    return promiseDelay(nextDelay)
-                            .then(() => attempt(...newArguments))
-                            .catch((subReason: any) => Promise.reject(subReason));
-                } else {
-                    return Promise.reject(reason);
-                }
+                return Promise.all([shouldRetry, nextDelay, newArguments]).then(
+                    ([resolvedShouldRetry, resolvedNextDelay, resolvedNewArguments = []]) => {
+                        if (resolvedShouldRetry) {
+                            return promiseDelay(resolvedNextDelay)
+                                .then(() => attempt(...resolvedNewArguments))
+                                .catch((subReason: any) => Promise.reject(subReason));
+                        } else {
+                            return Promise.reject(reason);
+                        }
+                    },
+                );
             });
         }(...args);
     };
