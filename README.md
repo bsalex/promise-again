@@ -1,6 +1,6 @@
 # promise-again
 
-Yet another wrapper for functions that return promise to retry rejected attempts.  
+Yet another wrapper for functions that returns promise to retry rejected attempts.  
 But this one with advanced **flexibility**.  
 
 ---
