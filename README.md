@@ -7,7 +7,7 @@ But this one with advanced **flexibility**.
 
 ## Usage
 
-```
+```javascript
 import promiseAgain from 'promise-again';
 
 function someFunctionReturningAPromise() {
@@ -30,7 +30,7 @@ const wrappedFunction = promiseAgain(
         *
         * @returns {number | Promise<number>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
         **/
-        delay: number | ((attempt: number, ...args: any[]) => number | Promise<number>);
+        delay: 1000, /*number | ((attempt: number, ...args: any[]) => number | Promise<number>)*/
         
         /**
         * Required. Number of attempts or function that returns true or a Promise that resolved to true if retry is needed;
@@ -41,7 +41,7 @@ const wrappedFunction = promiseAgain(
         *
         * @returns {boolean | Promise<any[]>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
         **/
-        attempts: number | ((attempt: number, ...args: any[]) => boolean | Promise<boolean>);
+        attempts: 10, /*number | ((attempt: number, ...args: any[]) => boolean | Promise<boolean>);*/
         
         /**
         * Optional. Function that is called before every retry attempt to modify next attempt arguments;
@@ -52,8 +52,10 @@ const wrappedFunction = promiseAgain(
         *
         * @returns {any[] | Promise<any[]>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
         **/
-        retryArgumentsInterceptor: (reason: any, attempt: number, ...args: any[]) => any[] | Promise<any[]>;
+        retryArgumentsInterceptor: (reason, attempt, ...args) => args /*(reason: any, attempt: number, ...args: any[]) => any[] | Promise<any[]>;*/
     }
 )
+
+wrappedFunction().then();
 
 ```
