@@ -28,29 +28,34 @@ const wrappedFunction = promiseAgain(
         * @param attempt - number of used attempts;
         * @param ...args - last attempt arguments;
         *
-        * @returns {number | Promise<number>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
+        * @returns {number | Promise<number>} - modified arguments to be used in
+        * the next attempt or a promise that is resolved to such arguments;
         **/
         delay: 1000, /*number | ((attempt: number, ...args: any[]) => number | Promise<number>)*/
         
         /**
-        * Required. Number of attempts or function that returns true or a Promise that resolved to true if retry is needed;
+        * Required. Number of attempts or function that returns true or a Promise 
+        * that resolved to true if retry is needed;
         * 
         * @param reason - reason of the last rejection;
         * @param attempt - number of used attempts;
         * @param ...args - last attempt arguments;
         *
-        * @returns {boolean | Promise<any[]>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
+        * @returns {boolean | Promise<any[]>} - modified arguments to be used in 
+        * the next attempt or a promise that is resolved to such arguments;
         **/
         attempts: 10, /*number | ((attempt: number, ...args: any[]) => boolean | Promise<boolean>);*/
         
         /**
-        * Optional. Function that is called before every retry attempt to modify next attempt arguments;
+        * Optional. Function that is called before every retry attempt to modify 
+        * next attempt arguments;
         * 
         * @param reason - reason of the last rejection;
         * @param attempt - number of used attempts;
         * @param ...args - last attempt arguments;
         *
-        * @returns {any[] | Promise<any[]>} - modified arguments to be used in the next attempt or a promise that is resolved to such arguments;
+        * @returns {any[] | Promise<any[]>} - modified arguments to be used in 
+        * the next attempt or a promise that is resolved to such arguments;
         **/
         retryArgumentsInterceptor: (reason, attempt, ...args) => args /*(reason: any, attempt: number, ...args: any[]) => any[] | Promise<any[]>;*/
     }

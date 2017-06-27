@@ -12,7 +12,8 @@
       "ts",
       "delay",
       "pause",
-      "attempt"
+      "attempt",
+      "rerun"
   ],
   "dependencies": {
     "delay": "^2.0.0"
